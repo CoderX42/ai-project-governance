@@ -1,8 +1,21 @@
 # AI Project Governance
 
-跨 IDE / 跨 Agent 的 AI 协作治理框架。
+> 你的 AI 写代码越来越失控了？这个项目用一套文档 + Skill 模板，把 AI 开发拉回可控轨道。
 
-为软件开发项目提供一套结构化、可复用的 AI 开发约束体系，覆盖需求分析、代码开发、PR 流程、文档同步和合并审查等全链路。
+## 核心痛点
+
+- AI 擅自改代码、不读文档、猜着写
+- PR 里混入调试代码、无关改动
+- 改完结构不更新文档，一个月后谁也看不懂
+- 不同 IDE（Cursor/Claude/Codex）规则不互通
+
+## 一键解决
+
+复制 5 份文档 → 替换占位符 → AI 自动遵守开发规范
+
+## 支持 9 个 IDE/Agent
+
+[Cursor] [Claude Code] [Trae] [Codex] [Gemini CLI] [OpenClaw] [Hermes] [Antigravity] [通用 Prompt]
 
 ## 支持的工具
 
