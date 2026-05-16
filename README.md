@@ -18,6 +18,12 @@
 | Hermes | Prompt Templates | [`integrations/hermes/`](integrations/hermes/) |
 | 通用 / 其他 | 纯 Prompt 模板 | [`integrations/generic/`](integrations/generic/) |
 
+## 里程碑
+
+- [x] **阶段一**：Cursor Skill 完整适配
+- [ ] **阶段二**：Claude Code + Trae 适配
+- [ ] **阶段三**：OpenClaw、Hermes、Gemini CLI、Antigravity 等后续工具适配
+
 ## 快速开始
 
 ### 1. 复制通用规则到项目根目录
