@@ -15,9 +15,8 @@
 
 ## 支持 9 个 IDE/Agent
 
-[Cursor] [Claude Code] [Trae] [Codex] [Gemini CLI] [OpenClaw] [Hermes] [Antigravity] [通用 Prompt]
+为软件开发项目提供一套结构化、可复用的 AI 开发约束体系，覆盖需求分析、代码开发、PR 流程、文档同步和合并审查等全链路。
 
-## 支持的工具
 
 | 工具 | 适配方式 | 目录 |
 |---|---|---|
