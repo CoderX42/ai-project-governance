@@ -266,7 +266,7 @@ main() {
       echo "  ✓ .cursor/skills/apg-main/"
     fi
     # 7 个独立动作 Skill
-    for skill in apg-project-init apg-task-intake apg-requirements-analysis apg-pre-pr-check apg-merge-check apg-governance-propose apg-governance-help; do
+    for skill in apg-init apg-intake apg-req apg-prepr apg-merge apg-propose apg-help; do
       if [[ -d "$src_dir/integrations/cursor/skills/$skill" ]]; then
         cp -r "$src_dir/integrations/cursor/skills/$skill" \
               "$TARGET_DIR/.cursor/skills/$skill"
