@@ -233,16 +233,14 @@ main() {
     exit 1
   fi
 
-  # 复制根文档到 docs/（CLAUDE.md 需同时复制一份到根目录供 AI 读取）
-  copy_one "$src_dir/docs/CLAUDE.md"              "$TARGET_DIR/docs/CLAUDE.md"
+  # 复制根文档
+  # CLAUDE.md 放在项目根目录（AI 协作物默认读取位置）
+  copy_one "$src_dir/docs/CLAUDE.md" "$TARGET_DIR/CLAUDE.md"
+  # 4 份细则文档放在 docs/ 目录下
   copy_one "$src_dir/docs/AI开发与PR流程.md"        "$TARGET_DIR/docs/AI开发与PR流程.md"
   copy_one "$src_dir/docs/项目开发规范.md"           "$TARGET_DIR/docs/项目开发规范.md"
   copy_one "$src_dir/docs/项目完整链路说明.md"       "$TARGET_DIR/docs/项目完整链路说明.md"
   copy_one "$src_dir/docs/项目文件结构说明.md"       "$TARGET_DIR/docs/项目文件结构说明.md"
-  # CLAUDE.md 同步到根目录（AI 协作物默认读取位置）
-  if [[ -f "$TARGET_DIR/docs/CLAUDE.md" ]]; then
-    cp "$TARGET_DIR/docs/CLAUDE.md" "$TARGET_DIR/CLAUDE.md"
-  fi
 
   # 需求分析
   if [[ -f "$src_dir/docs/项目需求分析.md" ]]; then
