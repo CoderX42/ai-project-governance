@@ -2,19 +2,21 @@
 #
 # AI Project Governance - 一键初始化脚本
 #
-# 用法（交互模式）:
-#   bash init-governance.sh
-#
 # 用法（参数模式）:
-#   bash init-governance.sh --project "My App" --branch dev --prod main --test "npm test" --pkg package.json
+#   bash init-governance.sh --project "My App" --branch dev --prod main --test "npm test" --pkg package.json /path/to/target
 #
-# 用法（远程，发布后）:
-#   bash <(curl -sSL https://raw.githubusercontent.com/YOUR_USER/ai-project-governance/main/scripts/init-governance.sh) --project "My App"
+# 用法（交互模式）:
+#   bash init-governance.sh /path/to/target
+#
+# 远程用法（直接执行）:
+#   bash <(curl -sSL https://your-gh-user.github.io/repo/scripts/init-governance.sh) --project "My App" /path/to/target
+#   或
+#   curl -sSL https://your-gh-user.github.io/repo/scripts/init-governance.sh | bash -s /path/to/target
 #
 set -e
 
 # ------------------------------------------------------------
-# 默认值区
+# 默认值区（可在这里修改，也可在参数模式通过 --project 等覆盖）
 # ------------------------------------------------------------
 DEFAULT_PROJECT_NAME="我的项目"
 DEFAULT_BRANCH="dev"
@@ -23,27 +25,34 @@ TEST_COMMAND="npm test"
 PACKAGE_FILE="package.json"
 # ------------------------------------------------------------
 
+# 帮助信息
 print_usage() {
   cat <<'EOF'
 用法:
-  bash init-governance.sh                      # 交互模式
-  bash init-governance.sh --project "My App"   # 参数模式（任意顺序）
-  bash init-governance.sh -h                    # 显示帮助
+  bash init-governance.sh /path/to/target               # 交互模式
+  bash init-governance.sh --project "MyApp" /path/to/target  # 参数模式
 
-参数模式示例:
-  --project "我的项目" --branch dev --prod main --test "npm test" --pkg package.json
+参数:
+  /path/to/target    目标项目目录（必需）
+  --project NAME    项目名称
+  --branch NAME     开发基线分支（默认 dev）
+  --prod NAME       生产分支（默认 main）
+  --test CMD        测试命令
+  --pkg FILE        包管理文件
+  -h, --help        显示本帮助
 
+示例:
+  bash init-governance.sh --project "MyApp" --branch dev --prod main --test "npm test" --pkg package.json ~/my-project
+  curl -sSL https://example.com/scripts/init-governance.sh | bash -s /path/to/target --project "MyApp"
 EOF
 }
 
-# 解析命令行参数
+# 参数解析
 parse_args() {
   while [[ $# -gt 0 ]]; do
     case "$1" in
       -h|--help)
-        print_usage
-        exit 0
-        ;;
+        print_usage; exit 0 ;;
       --project)
         PROJECT_NAME="$2"; shift 2 ;;
       --branch)
@@ -55,14 +64,13 @@ parse_args() {
       --pkg)
         PACKAGE_FILE_VAR="$2"; shift 2 ;;
       -*)
-        echo "❌ 未知参数: $1"; print_usage; exit 1 ;;
+        echo "❌ 未知参数: $1" >&2; print_usage >&2; exit 1 ;;
       *)
         TARGET_DIR="$1"; shift ;;
     esac
   done
 }
 
-# 默认值填充
 apply_defaults() {
   PROJECT_NAME="${PROJECT_NAME:-$DEFAULT_PROJECT_NAME}"
   DEFAULT_BRANCH="${DEFAULT_BRANCH:-dev}"
@@ -71,11 +79,9 @@ apply_defaults() {
   PACKAGE_FILE_VAR="${PACKAGE_FILE_VAR:-$PACKAGE_FILE}"
 }
 
-# 交互式收集参数（仅在非参数模式下调用）
+# 交互式收集参数
 gather_params() {
   echo "请提供以下信息（直接回车使用默认值）："
-  echo ""
-
   read_with_default "  项目名称"    "PROJECT_NAME"    "$DEFAULT_PROJECT_NAME"
   read_with_default "  开发基线分支" "DEFAULT_BRANCH"  "dev"
   read_with_default "  生产分支"     "PROD_BRANCH_VAR" "$PROD_BRANCH"
@@ -84,17 +90,10 @@ gather_params() {
 }
 
 read_with_default() {
-  local prompt="$1"
-  local var_name="$2"
-  local default="$3"
+  local prompt="$1" var_name="$2" default="$3"
   printf "%s [%s]: " "$prompt" "$default"
-  local val
-  read val
-  if [[ -z "$val" ]]; then
-    eval "$var_name=\$default"
-  else
-    eval "$var_name=\$val"
-  fi
+  local val; read val
+  eval "$var_name=\${val:-\$default}"
 }
 
 print_summary() {
@@ -111,15 +110,18 @@ print_summary() {
 check_already_init() {
   if [[ -f "$TARGET_DIR/CLAUDE.md" ]]; then
     echo "⚠️  $TARGET_DIR 已存在 CLAUDE.md，跳过初始化"
-    echo "如需重新初始化，请先删除现有的 governance 文档"
+    echo "如需重新初始化，请先删除："
+    echo "  rm -rf $TARGET_DIR/{CLAUDE.md,AI开发与PR流程.md,项目开发规范.md,项目完整链路说明.md,项目文件结构说明.md,docs,governance,.cursor}"
     exit 0
   fi
 }
 
+# sed 替换占位符（macOS BSD sed / GNU Linux sed 兼容）
 substitute() {
   local file="$1"
+  # 先判断 sed 版本：BSD sed（macOS）传给 /dev/null 会报 "unknown option"
   if sed -i '' /dev/null 2>/dev/null; then
-    # BSD sed (macOS): -i '' 语法
+    # BSD sed（macOS）：-i 后面必须跟 ''
     sed -i '' \
       -e "s/{{PROJECT_NAME}}/$PROJECT_NAME/g" \
       -e "s/{{DEFAULT_BRANCH}}/$DEFAULT_BRANCH/g" \
@@ -128,7 +130,7 @@ substitute() {
       -e "s/{{PACKAGE_FILE}}/$PACKAGE_FILE_VAR/g" \
       "$file"
   else
-    # GNU sed (Linux): -i 没有空格
+    # GNU sed（Linux）：-i 后面不能有空格
     sed -i.bak \
       -e "s/{{PROJECT_NAME}}/$PROJECT_NAME/g" \
       -e "s/{{DEFAULT_BRANCH}}/$DEFAULT_BRANCH/g" \
@@ -140,32 +142,37 @@ substitute() {
   fi
 }
 
+# 复制单个文件（支持相对路径自动拼 TARGET_DIR）
 copy_one() {
-  local src="$1"
-  local dst="$2"
+  local src="$1" dst="$2"
   if [[ -f "$src" ]]; then
+    # 相对路径基于 SOURCE_DIR，绝对路径直接用
+    local abs_src="$src"
     local abs_dst="$dst"
-    # 相对路径：以 TARGET_DIR 为基址；绝对路径直接用
     [[ "$dst" != /* ]] && abs_dst="$TARGET_DIR/$dst"
     mkdir -p "$(dirname "$abs_dst")"
-    cp "$src" "$abs_dst"
+    cp "$abs_src" "$abs_dst"
     substitute "$abs_dst"
     echo "  ✓ $(basename "$dst")"
+  else
+    echo "  ✗ 跳过（源不存在）: $src" >&2
   fi
 }
 
 main() {
   parse_args "$@"
 
-  # 目标目录：参数最后位置 或 当前目录
-  TARGET_DIR="${TARGET_DIR:-$(pwd)}"
+  if [[ -z "$TARGET_DIR" ]]; then
+    echo "❌ 错误：未指定目标目录。" >&2
+    echo "用法：bash init-governance.sh /path/to/target" >&2
+    exit 1
+  fi
 
-  # 非参数模式（没有传 --project 等）则交互询问
-  if [[ -z "$PROJECT_NAME" && -z "$DEFAULT_BRANCH" && -z "$PROD_BRANCH_VAR" && -z "$TEST_COMMAND_VAR" && -z "$PACKAGE_FILE_VAR" ]]; then
+  # 非参数模式（无 --project 等）走交互流程
+  if [[ -z "$PROJECT_NAME" && -z "$PROD_BRANCH_VAR" ]]; then
     echo ""
     echo "=== AI Project Governance 初始化 ==="
     echo "目标目录: $TARGET_DIR"
-    echo ""
     gather_params
     print_summary
   else
@@ -177,13 +184,14 @@ main() {
   echo "开始复制 governance 文档..."
   mkdir -p "$TARGET_DIR"
 
+  # 根文档（直接复制到目标根目录）
   copy_one "$SOURCE_DIR/docs/CLAUDE.md"              "CLAUDE.md"
   copy_one "$SOURCE_DIR/docs/AI开发与PR流程.md"        "AI开发与PR流程.md"
   copy_one "$SOURCE_DIR/docs/项目开发规范.md"           "项目开发规范.md"
   copy_one "$SOURCE_DIR/docs/项目完整链路说明.md"       "项目完整链路说明.md"
   copy_one "$SOURCE_DIR/docs/项目文件结构说明.md"       "项目文件结构说明.md"
 
-  # docs/项目需求分析.md 复制到目标 docs/ 下，需要避免同文件误报
+  # 需求分析（复制到目标 docs/ 目录）
   local req_src="$SOURCE_DIR/docs/项目需求分析.md"
   local req_dst="$TARGET_DIR/docs/项目需求分析.md"
   if [[ -f "$req_src" ]]; then
@@ -193,9 +201,11 @@ main() {
     echo "  ✓ docs/项目需求分析.md"
   fi
 
+  # governance 提案工作区骨架
   mkdir -p "$TARGET_DIR/governance/artifacts"
   echo "  ✓ governance/artifacts/"
 
+  # Cursor Skill（复制到目标 .cursor/skills/）
   local skill_src="$SOURCE_DIR/integrations/cursor/skills/ai-project-governance"
   if [[ -d "$skill_src" ]]; then
     mkdir -p "$TARGET_DIR/.cursor/skills"
@@ -207,41 +217,64 @@ main() {
   echo "✅ 初始化完成！"
   echo ""
   echo "下一步："
-  echo "  1. 如果目标目录还不是 git 项目：cd $TARGET_DIR && git init"
+  echo "  1. cd $TARGET_DIR && git init（如果不是 git 项目）"
   echo "  2. 重新打开 Cursor，AI 会自动读取 CLAUDE.md"
   echo "  3. 对 AI 说“初始化项目 governance”验证配置"
 }
 
-SOURCE_DIR="$(cd "$(dirname "$0")/.." && pwd)"
-# ------------------------------------------------------------
-# 从远程 curl | bash 执行时 $0 = bash/-bash/stdin，BASH_SOURCE[0] 为空，
-# 需要从进程的 fd 信息反查真实脚本路径。
-# ------------------------------------------------------------
+# ================================================================
+# SOURCE_DIR 解析：从远程 curl|bash 管道执行时，
+# $0 = "-bash", BASH_SOURCE[0] = "", $PWD 为任意目录。
+# 策略：尝试 BASH_SOURCE[0] → 脚本本地存在判断 → 目录回溯搜索
+# ================================================================
 _resolve_source() {
   local try="${BASH_SOURCE[0]:-$0}"
-  # 如果指向真实文件（不是 stdin/devfd），直接用
-  [[ -f "$try" && "$try" != "/dev/stdin" && "$try" != "/dev/fd/0" && "$try" != "-bash" ]] && echo "$(cd "$(dirname "$try")/.." && pwd)" && return
 
-  # Linux: /proc/self/fd 包含脚本的真实路径
-  local fd_path
-  for fd_path in /proc/self/fd/255 /proc/self/fd/254; do
-    if [[ -L "$fd_path" ]]; then
-      local real_path
-      real_path="$(readlink -f "$fd_path" 2>/dev/null)" && [[ -f "$real_path" ]] && echo "$(cd "$(dirname "$real_path")/.." && pwd)" && return
-    fi
-  done
+  # 1. BASH_SOURCE[0] 指向真实文件（直接执行脚本时）
+  if [[ -f "$try" && "$try" != "/dev/stdin" && "$try" != "/dev/fd/0" && "$try" != "-bash" ]]; then
+    echo "$(cd "$(dirname "$try")/.." && pwd)"
+    return
+  fi
 
-  # macOS / 通用 fallback: 从 $0 或当前 cwd 反向搜索
-  local dir
-  dir="$(pwd)"
-  # 向上搜索找 governance 根目录（停止在 / 或 $HOME）
+  # 2. 脚本本地存在判断：直接检查脚本文件是否在当前目录下（本地执行时）
+  if [[ -f "${PWD}/scripts/init-governance.sh" ]]; then
+    echo "$(cd "${PWD}" && pwd)"
+    return
+  fi
+
+  # 3. 从 PWD 向上回溯搜索 governance 仓库特征文件
+  local dir="$(pwd)"
   while [[ "$dir" != "/" && "$dir" != "$HOME" ]]; do
-    if [[ -f "$dir/scripts/init-governance.sh" || -f "$dir/integrations/cursor/skills/ai-project-governance/SKILL.md" ]]; then
-      echo "$dir" && return
+    if [[ -f "$dir/integrations/cursor/skills/ai-project-governance/SKILL.md" ]]; then
+      echo "$dir"
+      return
     fi
     dir="$(dirname "$dir")"
   done
+
+  # 4. Linux：尝试 /proc/self/fd/255（bash 255 是 stdin）
+  local real_path
+  for fd in /proc/self/fd/255 /proc/self/fd/254; do
+    if [[ -L "$fd" ]]; then
+      real_path="$(readlink -f "$fd" 2>/dev/null)" || continue
+      if [[ -f "$real_path" ]]; then
+        echo "$(cd "$(dirname "$real_path")/.." && pwd)"
+        return
+      fi
+    fi
+  done
+
+  echo ""  # 所有策略失败，返回空
 }
+
 SOURCE_DIR="$(_resolve_source)"
 unset -f _resolve_source
+
+# 如果 SOURCE_DIR 为空，说明所有路径解析策略都失效，主动报错并退出
+if [[ -z "$SOURCE_DIR" ]]; then
+  echo "❌ 错误：无法定位 governance 仓库路径。" >&2
+  echo "请确保从本地脚本执行，或从包含 governance 仓库的目录运行。" >&2
+  exit 1
+fi
+
 main "$@"
