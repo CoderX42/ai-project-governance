@@ -256,12 +256,23 @@ main() {
   mkdir -p "$TARGET_DIR/governance/artifacts"
   echo "  ✓ governance/artifacts/"
 
-  # Cursor Skill
-  if [[ -d "$src_dir/integrations/cursor/skills/ai-project-governance" ]]; then
+  # Cursor Skills: apg-main 主入口 + 7 个独立动作 Skill
+  if [[ -d "$src_dir/integrations/cursor/skills" ]]; then
     mkdir -p "$TARGET_DIR/.cursor/skills"
-    cp -r "$src_dir/integrations/cursor/skills/ai-project-governance" \
-          "$TARGET_DIR/.cursor/skills/ai-project-governance"
-    echo "  ✓ .cursor/skills/ai-project-governance/"
+    # 主入口 Skill（始终自动加载）
+    if [[ -d "$src_dir/integrations/cursor/skills/apg-main" ]]; then
+      cp -r "$src_dir/integrations/cursor/skills/apg-main" \
+            "$TARGET_DIR/.cursor/skills/apg-main"
+      echo "  ✓ .cursor/skills/apg-main/"
+    fi
+    # 7 个独立动作 Skill
+    for skill in apg-init apg-intake apg-req apg-prepr apg-merge apg-propose apg-help; do
+      if [[ -d "$src_dir/integrations/cursor/skills/$skill" ]]; then
+        cp -r "$src_dir/integrations/cursor/skills/$skill" \
+              "$TARGET_DIR/.cursor/skills/$skill"
+        echo "  ✓ .cursor/skills/$skill/"
+      fi
+    done
   fi
 
   echo ""
