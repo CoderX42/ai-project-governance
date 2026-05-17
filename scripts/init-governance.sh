@@ -214,11 +214,34 @@ main() {
 
 SOURCE_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 # ------------------------------------------------------------
-# 从远程 curl | bash 执行时 $0 = bash/stdin，需要用 BASH_SOURCE[0] 找真实脚本位置
+# 从远程 curl | bash 执行时 $0 = bash/-bash/stdin，BASH_SOURCE[0] 为空，
+# 需要从进程的 fd 信息反查真实脚本路径。
 # ------------------------------------------------------------
-_real_script="${BASH_SOURCE[0]:-$0}"
-if [[ -f "$_real_script" && "$_real_script" != "/dev/stdin" && "$_real_script" != "/dev/fd/0" ]]; then
-  SOURCE_DIR="$(cd "$(dirname "$_real_script")/.." && pwd)"
-fi
-unset _real_script
+_resolve_source() {
+  local try="${BASH_SOURCE[0]:-$0}"
+  # 如果指向真实文件（不是 stdin/devfd），直接用
+  [[ -f "$try" && "$try" != "/dev/stdin" && "$try" != "/dev/fd/0" && "$try" != "-bash" ]] && echo "$(cd "$(dirname "$try")/.." && pwd)" && return
+
+  # Linux: /proc/self/fd 包含脚本的真实路径
+  local fd_path
+  for fd_path in /proc/self/fd/255 /proc/self/fd/254; do
+    if [[ -L "$fd_path" ]]; then
+      local real_path
+      real_path="$(readlink -f "$fd_path" 2>/dev/null)" && [[ -f "$real_path" ]] && echo "$(cd "$(dirname "$real_path")/.." && pwd)" && return
+    fi
+  done
+
+  # macOS / 通用 fallback: 从 $0 或当前 cwd 反向搜索
+  local dir
+  dir="$(pwd)"
+  # 向上搜索找 governance 根目录（停止在 / 或 $HOME）
+  while [[ "$dir" != "/" && "$dir" != "$HOME" ]]; do
+    if [[ -f "$dir/scripts/init-governance.sh" || -f "$dir/integrations/cursor/skills/ai-project-governance/SKILL.md" ]]; then
+      echo "$dir" && return
+    fi
+    dir="$(dirname "$dir")"
+  done
+}
+SOURCE_DIR="$(_resolve_source)"
+unset -f _resolve_source
 main "$@"
