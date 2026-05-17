@@ -213,4 +213,12 @@ main() {
 }
 
 SOURCE_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+# ------------------------------------------------------------
+# 从远程 curl | bash 执行时 $0 = bash/stdin，需要用 BASH_SOURCE[0] 找真实脚本位置
+# ------------------------------------------------------------
+_real_script="${BASH_SOURCE[0]:-$0}"
+if [[ -f "$_real_script" && "$_real_script" != "/dev/stdin" && "$_real_script" != "/dev/fd/0" ]]; then
+  SOURCE_DIR="$(cd "$(dirname "$_real_script")/.." && pwd)"
+fi
+unset _real_script
 main "$@"
