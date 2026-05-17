@@ -9,6 +9,7 @@ Run this checklist at the start of every new task.
 - [ ] `项目开发规范.md` exists and is readable
 - [ ] `项目完整链路说明.md` exists and is readable
 - [ ] `项目文件结构说明.md` exists and is readable
+- [ ] `项目需求分析.md` exists and is readable (if task involves new features)
 
 If any doc is missing, stop and run `/project-init`.
 
@@ -27,11 +28,12 @@ If any doc is missing, stop and run `/project-init`.
 
 Answer these before proposing any code:
 
-1. What is the real goal of this task?
+1. What is the real goal of this task? (If `项目需求分析.md` exists, base understanding on its P0 features and acceptance criteria)
 2. Which existing modules/files are directly involved?
 3. Are there upstream dependencies or downstream consumers?
 4. Does this change any shared definitions, configuration schemas, or APIs?
 5. Are there modes/switches that alter behavior when on vs off?
+6. Does this task introduce new requirements not covered in `项目需求分析.md`? If so, flag the gap before proceeding.
 
 ## Phase 4: Impact Trace
 

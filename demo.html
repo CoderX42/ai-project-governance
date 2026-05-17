@@ -1,0 +1,1419 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Project Governance - AI 协作治理框架</title>
+  <style>
+    :root {
+      --bg-primary: #0f1117;
+      --bg-secondary: #161922;
+      --bg-card: #1c1f2e;
+      --bg-card-hover: #232738;
+      --border: #2a2d3e;
+      --text-primary: #e8eaf0;
+      --text-secondary: #8890a8;
+      --text-muted: #5c6178;
+      --accent: #6c63ff;
+      --accent-hover: #7d73ff;
+      --accent-glow: rgba(108, 99, 255, 0.25);
+      --accent-secondary: #00d4aa;
+      --accent-warning: #ffb547;
+      --accent-danger: #ff6b6b;
+      --accent-success: #4ade80;
+      --accent-info: #38bdf8;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      line-height: 1.7;
+      font-size: 15px;
+      overflow-x: hidden;
+    }
+
+    /* ─── Background ─── */
+    .bg-grid {
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(108,99,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(108,99,255,0.03) 1px, transparent 1px);
+      background-size: 48px 48px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .bg-glow {
+      position: fixed;
+      top: -200px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 800px;
+      height: 600px;
+      background: radial-gradient(ellipse at center, rgba(108,99,255,0.12) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ─── Layout ─── */
+    .container {
+      position: relative;
+      z-index: 1;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* ─── Navigation ─── */
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(15,17,23,0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 56px;
+    }
+
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-primary);
+      text-decoration: none;
+    }
+
+    .nav-logo-icon {
+      width: 28px;
+      height: 28px;
+      background: linear-gradient(135deg, var(--accent), #a78bfa);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 4px;
+    }
+
+    .nav-links a {
+      padding: 6px 14px;
+      border-radius: 8px;
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+
+    .nav-links a:hover {
+      color: var(--text-primary);
+      background: var(--bg-card);
+    }
+
+    /* ─── Hero ─── */
+    .hero {
+      padding: 100px 0 80px;
+      text-align: center;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      background: var(--accent-glow);
+      border: 1px solid rgba(108,99,255,0.3);
+      border-radius: 100px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--accent);
+      margin-bottom: 24px;
+      letter-spacing: 0.5px;
+    }
+
+    .hero-badge .dot {
+      width: 6px;
+      height: 6px;
+      background: var(--accent);
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    .hero h1 {
+      font-size: 52px;
+      font-weight: 800;
+      letter-spacing: -2px;
+      line-height: 1.15;
+      margin-bottom: 20px;
+    }
+
+    .hero h1 .gradient {
+      background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero p {
+      font-size: 18px;
+      color: var(--text-secondary);
+      max-width: 560px;
+      margin: 0 auto 40px;
+      line-height: 1.8;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 24px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s;
+      cursor: pointer;
+      border: none;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+      box-shadow: 0 4px 20px var(--accent-glow);
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-hover);
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background: var(--bg-card);
+      color: var(--text-primary);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+      background: var(--bg-card-hover);
+    }
+
+    /* ─── Feature Pills ─── */
+    .hero-pills {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 48px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 14px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    .pill .icon {
+      font-size: 14px;
+    }
+
+    /* ─── Section ─── */
+    .section {
+      padding: 72px 0;
+    }
+
+    .section-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 12px;
+    }
+
+    .section-title {
+      font-size: 32px;
+      font-weight: 700;
+      letter-spacing: -1px;
+      margin-bottom: 12px;
+    }
+
+    .section-desc {
+      font-size: 16px;
+      color: var(--text-secondary);
+      max-width: 520px;
+      margin-bottom: 48px;
+    }
+
+    /* ─── Flow Diagram ─── */
+    .flow {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      flex-wrap: wrap;
+      margin: 48px 0;
+    }
+
+    .flow-step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+      padding: 20px 28px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      min-width: 140px;
+      text-align: center;
+      transition: all 0.3s;
+    }
+
+    .flow-step:hover {
+      border-color: var(--accent);
+      box-shadow: 0 0 24px var(--accent-glow);
+      transform: translateY(-2px);
+    }
+
+    .flow-step .step-num {
+      width: 28px;
+      height: 28px;
+      background: var(--accent);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .flow-step .step-icon {
+      font-size: 28px;
+    }
+
+    .flow-step .step-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .flow-step .step-desc {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .flow-arrow {
+      font-size: 20px;
+      color: var(--text-muted);
+      padding: 0 8px;
+    }
+
+    /* ─── Cards Grid ─── */
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 16px;
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      transition: all 0.25s;
+    }
+
+    .card:hover {
+      border-color: rgba(108,99,255,0.4);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    }
+
+    .card-icon {
+      width: 44px;
+      height: 44px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      margin-bottom: 16px;
+    }
+
+    .card h3 {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .card p {
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.7;
+    }
+
+    .card-tag {
+      display: inline-flex;
+      padding: 3px 10px;
+      border-radius: 100px;
+      font-size: 11px;
+      font-weight: 600;
+      margin-top: 14px;
+    }
+
+    .tag-slash { background: rgba(108,99,255,0.15); color: var(--accent); }
+    .tag-skill { background: rgba(0,212,170,0.15); color: var(--accent-secondary); }
+    .tag-core { background: rgba(255,181,71,0.15); color: var(--accent-warning); }
+
+    /* ─── Action Detail Cards ─── */
+    .action-detail {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      margin-bottom: 20px;
+      overflow: hidden;
+    }
+
+    .action-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 20px 24px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .action-header:hover {
+      background: var(--bg-card-hover);
+    }
+
+    .action-header .ah-icon {
+      width: 44px;
+      height: 44px;
+      background: var(--accent);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    .action-header .ah-info {
+      flex: 1;
+    }
+
+    .action-header .ah-name {
+      font-size: 15px;
+      font-weight: 700;
+      margin-bottom: 2px;
+    }
+
+    .action-header .ah-trigger {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .action-header .ah-arrow {
+      font-size: 18px;
+      color: var(--text-muted);
+      transition: transform 0.2s;
+    }
+
+    .action-detail.open .ah-arrow {
+      transform: rotate(180deg);
+    }
+
+    .action-body {
+      display: none;
+      padding: 0 24px 24px;
+      border-top: 1px solid var(--border);
+    }
+
+    .action-detail.open .action-body {
+      display: block;
+    }
+
+    .action-body h4 {
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+      margin: 20px 0 10px;
+    }
+
+    .action-body ol {
+      padding-left: 20px;
+    }
+
+    .action-body li {
+      margin-bottom: 8px;
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+
+    .action-body code {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      padding: 2px 7px;
+      border-radius: 6px;
+      font-size: 12px;
+      color: var(--accent-secondary);
+      font-family: 'Fira Code', monospace;
+    }
+
+    .action-body pre {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px;
+      overflow-x: auto;
+      font-size: 12px;
+      line-height: 1.7;
+      margin: 12px 0;
+    }
+
+    .action-body pre code {
+      background: none;
+      border: none;
+      padding: 0;
+      color: var(--text-primary);
+    }
+
+    /* ─── Architecture ─── */
+    .arch-diagram {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 32px;
+      margin: 32px 0;
+    }
+
+    .arch-diagram h3 {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 24px;
+      text-align: center;
+    }
+
+    .arch-layers {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .arch-layer {
+      display: flex;
+      align-items: stretch;
+      gap: 12px;
+    }
+
+    .arch-label {
+      width: 100px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      flex-shrink: 0;
+    }
+
+    .arch-items {
+      flex: 1;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .arch-item {
+      flex: 1;
+      min-width: 120px;
+      padding: 10px 14px;
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-align: center;
+    }
+
+    /* ─── Artifact Tree ─── */
+    .artifact-tree {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      margin: 32px 0;
+      font-family: 'Fira Code', 'Consolas', monospace;
+      font-size: 13px;
+    }
+
+    .artifact-tree h3 {
+      font-size: 16px;
+      margin-bottom: 16px;
+    }
+
+    .tree-line {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 0;
+      color: var(--text-secondary);
+    }
+
+    .tree-line .folder { color: var(--accent-warning); }
+    .tree-line .file { color: var(--accent-secondary); }
+    .tree-line .comment { color: var(--text-muted); font-size: 11px; }
+
+    .tree-indent {
+      width: 20px;
+      display: inline-block;
+    }
+
+    /* ─── Milestone Demo ─── */
+    .milestone-demo {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 24px;
+      margin: 32px 0;
+    }
+
+    .milestone-demo h3 {
+      font-size: 16px;
+      margin-bottom: 16px;
+    }
+
+    .milestone {
+      margin-bottom: 16px;
+    }
+
+    .milestone-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 8px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .milestone-header .emoji {
+      font-size: 16px;
+    }
+
+    .milestone-header .done-count {
+      font-size: 11px;
+      color: var(--text-muted);
+      font-weight: 400;
+    }
+
+    .milestone-tasks {
+      padding-left: 28px;
+    }
+
+    .task-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px 0;
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .task-item input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      accent-color: var(--accent);
+    }
+
+    .task-item.next {
+      color: var(--text-primary);
+      font-weight: 600;
+    }
+
+    .task-item .next-tag {
+      font-size: 10px;
+      background: var(--accent-glow);
+      color: var(--accent);
+      padding: 2px 7px;
+      border-radius: 100px;
+      font-weight: 700;
+    }
+
+    /* ─── Comparison Table ─── */
+    .comp-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 32px 0;
+    }
+
+    .comp-table th {
+      text-align: left;
+      padding: 12px 16px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .comp-table td {
+      padding: 14px 16px;
+      font-size: 14px;
+      color: var(--text-secondary);
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+
+    .comp-table tr:hover td {
+      background: var(--bg-card);
+    }
+
+    .comp-table .check { color: var(--accent-success); font-size: 16px; }
+    .comp-table .cross { color: var(--accent-danger); font-size: 16px; }
+    .comp-table .partial { color: var(--accent-warning); font-size: 16px; }
+    .comp-table .highlight { color: var(--accent); font-weight: 600; }
+
+    /* ─── Footer ─── */
+    .footer {
+      border-top: 1px solid var(--border);
+      padding: 48px 0;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+
+    /* ─── Divider ─── */
+    .divider {
+      height: 1px;
+      background: var(--border);
+      margin: 0;
+    }
+
+    /* ─── Scrollable code blocks ─── */
+    pre {
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    pre::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    pre::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    pre::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 3px;
+    }
+
+    /* ─── Responsive ─── */
+    @media (max-width: 768px) {
+      .hero h1 { font-size: 34px; }
+      .flow { flex-direction: column; }
+      .flow-arrow { transform: rotate(90deg); }
+      .comp-table { font-size: 12px; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="bg-grid"></div>
+<div class="bg-glow"></div>
+
+<!-- Navigation -->
+<nav class="nav">
+  <div class="container nav-inner">
+    <a href="#" class="nav-logo">
+      <div class="nav-logo-icon">⚙</div>
+      AI Project Governance
+    </a>
+    <div class="nav-links">
+      <a href="#actions">Actions</a>
+      <a href="#arch">架构</a>
+      <a href="#artifact">Artifact</a>
+      <a href="#compare">对比</a>
+    </div>
+  </div>
+</nav>
+
+<!-- Hero -->
+<section class="hero">
+  <div class="container">
+    <div class="hero-badge">
+      <span class="dot"></span>
+      AI First · Rule-Driven · Zero Guessing
+    </div>
+    <h1>
+      让 AI 遵循<br>
+      <span class="gradient">开发治理框架</span>
+    </h1>
+    <p>
+      一个模板仓库，为 Claude Code、Cursor 等 AI IDE 提供结构化的开发规范、提案工作区和实时引导。通过文档前置、阶段门禁和 milestone 追踪，让 AI 协作可预测、可审计、不跳步。
+    </p>
+    <div class="hero-actions">
+      <a href="#actions" class="btn btn-primary">
+        <span>🚀</span> 探索 Actions
+      </a>
+      <a href="#artifact" class="btn btn-secondary">
+        <span>📁</span> 查看 Artifact 结构
+      </a>
+    </div>
+    <div class="hero-pills">
+      <span class="pill"><span class="icon">📋</span> 7 个 Action</span>
+      <span class="pill"><span class="icon">📁</span> 提案 Artifact</span>
+      <span class="pill"><span class="icon">🎯</span> Milestone 追踪</span>
+      <span class="pill"><span class="icon">🔒</span> PR 门禁</span>
+      <span class="pill"><span class="icon">🧹</span> 乱码阻塞</span>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- Workflow Flow -->
+<section class="section">
+  <div class="container">
+    <div class="section-label">Workflow</div>
+    <h2 class="section-title">7 阶段开发流程</h2>
+    <p class="section-desc">每个任务严格按阶段推进，阶段自检未通过不得进入下一阶段。</p>
+
+    <div class="flow">
+      <div class="flow-step">
+        <div class="step-num">1</div>
+        <div class="step-icon">🔍</div>
+        <div class="step-title">环境确认</div>
+        <div class="step-desc">gh + git 状态</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="step-num">2</div>
+        <div class="step-icon">🔄</div>
+        <div class="step-title">同步基线</div>
+        <div class="step-desc">pull origin/dev</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="step-num">3</div>
+        <div class="step-icon">📐</div>
+        <div class="step-title">提案生成</div>
+        <div class="step-desc">propose → artifacts</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="step-num">4</div>
+        <div class="step-icon">💻</div>
+        <div class="step-title">开发</div>
+        <div class="step-desc">分阶段自检</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="step-num">5</div>
+        <div class="step-icon">🔀</div>
+        <div class="step-title">Rebase</div>
+        <div class="step-desc">再同步 dev</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="step-num">6</div>
+        <div class="step-icon">📂</div>
+        <div class="step-title">PR</div>
+        <div class="step-desc">创建 PR → dev</div>
+      </div>
+      <div class="flow-arrow">→</div>
+      <div class="flow-step">
+        <div class="step-num">7</div>
+        <div class="step-icon">✅</div>
+        <div class="step-title">合并</div>
+        <div class="step-desc">需明确授权</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- 7 Actions Detail -->
+<section class="section" id="actions">
+  <div class="container">
+    <div class="section-label">Actions</div>
+    <h2 class="section-title">7 个核心 Action</h2>
+    <p class="section-desc">每个 Action 对应一个检查清单，覆盖完整的协作生命周期。</p>
+
+    <div class="action-detail open">
+      <div class="action-header" onclick="toggleAction(this)">
+        <div class="ah-icon" style="background: var(--accent-secondary);">🗂</div>
+        <div class="ah-info">
+          <div class="ah-name">/governance-propose</div>
+          <div class="ah-trigger">触发词：propose 新功能、创建提案、生成规范文件夹</div>
+        </div>
+        <div class="ah-arrow">▼</div>
+      </div>
+      <div class="action-body">
+        <h4>执行步骤</h4>
+        <ol>
+          <li>解析变更名，中文转 kebab-case（如：添加深色模式 → <code>add-dark-mode</code>）</li>
+          <li>在 <code>governance/artifacts/&lt;change-name&gt;/</code> 下创建完整提案文件夹</li>
+          <li>生成 5 个文件：<code>proposal.md</code>、<code>specs/index.md</code>、<code>specs/scenarios.md</code>、<code>design.md</code>、<code>tasks.md</code></li>
+          <li><code>tasks.md</code> 包含 3-5 个 Milestone，每个 Milestone 含检查项，状态标记为 🔄（进行中）/ ✅（完成）/ ⬜（未开始）</li>
+          <li>确认目录中有全部 5 个文件后报告完成</li>
+        </ol>
+        <h4>输出示例</h4>
+        <pre><code>## Milestone 2: 核心实现 [🔄 2/4]
+- [x] Task 2.1: 注册 API 端点
+- [x] Task 2.2: 编写数据模型
+- [ ] Task 2.3: 实现业务逻辑 ← **建议下一步**
+- [ ] Task 2.4: 单元测试</code></pre>
+      </div>
+    </div>
+
+    <div class="action-detail">
+      <div class="action-header" onclick="toggleAction(this)">
+        <div class="ah-icon" style="background: var(--accent-info);">🎯</div>
+        <div class="ah-info">
+          <div class="ah-name">/governance-help</div>
+          <div class="ah-trigger">触发词：下一步是什么、当前进度、governance help、引导我</div>
+        </div>
+        <div class="ah-arrow">▼</div>
+      </div>
+      <div class="action-body">
+        <h4>执行步骤</h4>
+        <ol>
+          <li>扫描 <code>governance/artifacts/*/tasks.md</code>，找出所有进行中（🔄）的变更</li>
+          <li>每个进行中的变更输出：变更名、路径、当前 Milestone、完成度</li>
+          <li>列出当前 Milestone 中所有未完成任务，第一项标记为 ← 建议下一步</li>
+          <li>如无进行中变更，列出所有变更的顶层 Milestone 状态并提示创建新提案</li>
+        </ol>
+        <h4>输出格式</h4>
+        <pre><code>## 正在进行：add-dark-mode
+
+路径：`governance/artifacts/add-dark-mode/`
+
+Milestone 2: 核心实现 [🔄 2/4]
+- [x] Task 2.1: 注册 API 端点
+- [x] Task 2.2: 编写数据模型
+- [ ] Task 2.3: 实现业务逻辑 ← **建议下一步**
+- [ ] Task 2.4: 单元测试
+
+建议：完成 Task 2.3 后运行 /pre-pr-check 验证</code></pre>
+      </div>
+    </div>
+
+    <div class="action-detail">
+      <div class="action-header" onclick="toggleAction(this)">
+        <div class="ah-icon">📋</div>
+        <div class="ah-info">
+          <div class="ah-name">/project-init</div>
+          <div class="ah-trigger">触发词：init governance、set up project rules、create CLAUDE.md</div>
+        </div>
+        <div class="ah-arrow">▼</div>
+      </div>
+      <div class="action-body">
+        <h4>执行步骤</h4>
+        <ol>
+          <li>检查当前仓库是否已有 5 份根文档：<code>CLAUDE.md</code>、<code>AI开发与PR流程.md</code>、<code>项目开发规范.md</code>、<code>项目完整链路说明.md</code>、<code>项目文件结构说明.md</code></li>
+          <li>如有缺失，从模板目录复制对应文件</li>
+          <li>提示用户替换 <code>{{DEFAULT_BRANCH}}</code>、<code>{{PROD_BRANCH}}</code>、<code>{{TEST_COMMAND}}</code> 等占位符</li>
+          <li>记录项目实际值：默认分支、生产分支、测试命令、包管理文件</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="action-detail">
+      <div class="action-header" onclick="toggleAction(this)">
+        <div class="ah-icon" style="background: var(--accent-warning);">📥</div>
+        <div class="ah-info">
+          <div class="ah-name">/task-intake</div>
+          <div class="ah-trigger">触发词：start new task、analyze this feature、what should I do next</div>
+        </div>
+        <div class="ah-arrow">▼</div>
+      </div>
+      <div class="action-body">
+        <h4>执行步骤</h4>
+        <ol>
+          <li>读取 <code>CLAUDE.md</code>，如不存在则警告并回退到 <code>/project-init</code></li>
+          <li>读取其他 4 份根文档</li>
+          <li>根据用户措辞判断任务类型：<strong>分析</strong>（analyze/review/explain）→ 只输出分析；<strong>实现</strong>（implement/develop/fix）→ 进入开发清单</li>
+          <li>实现任务输出：需求理解、影响追踪、分阶段开发清单、阶段自检项</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="action-detail">
+      <div class="action-header" onclick="toggleAction(this)">
+        <div class="ah-icon" style="background: var(--accent-danger);">🔍</div>
+        <div class="ah-info">
+          <div class="ah-name">/pre-pr-check</div>
+          <div class="ah-trigger">触发词：ready to PR、prepare PR、check before PR</div>
+        </div>
+        <div class="ah-arrow">▼</div>
+      </div>
+      <div class="action-body">
+        <h4>执行步骤</h4>
+        <ol>
+          <li>执行 <code>checklists/pre-pr.md</code> 中的所有检查项</li>
+          <li>确认 <code>git status --short</code> 只显示任务相关文件</li>
+          <li>确认 <code>git diff --check</code> 无空白错误</li>
+          <li>如有结构文件变更，确认 <code>项目文件结构说明.md</code> 已更新</li>
+          <li>如有功能流变更，确认 <code>项目完整链路说明.md</code> 已更新</li>
+          <li>根据真实 diff 内容生成 PR 标题和正文</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="action-detail">
+      <div class="action-header" onclick="toggleAction(this)">
+        <div class="ah-icon" style="background: var(--accent-success);">✅</div>
+        <div class="ah-info">
+          <div class="ah-name">/merge-check</div>
+          <div class="ah-trigger">触发词：merge now、can I merge、ready to merge</div>
+        </div>
+        <div class="ah-arrow">▼</div>
+      </div>
+      <div class="action-body">
+        <h4>执行步骤</h4>
+        <ol>
+          <li>执行 <code>checklists/merge.md</code> 中的所有检查项</li>
+          <li>确认 PR 目标分支是默认开发分支，绝不是生产分支</li>
+          <li>确认本地功能分支已吸收最新 <code>origin/dev</code></li>
+          <li>确认 PR 状态为 <code>OPEN</code> 且不是 <code>DRAFT</code></li>
+          <li>执行 <code>gh pr merge</code> 后验证：PR 状态变为 <code>MERGED</code>、本地默认分支快进到合并提交</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="action-detail">
+      <div class="action-header" onclick="toggleAction(this)">
+        <div class="ah-icon" style="background: #a78bfa;">💡</div>
+        <div class="ah-info">
+          <div class="ah-name">/requirements-analysis</div>
+          <div class="ah-trigger">触发词：new idea、new feature、我有一个想法、需求分析、帮我梳理需求</div>
+        </div>
+        <div class="ah-arrow">▼</div>
+      </div>
+      <div class="action-body">
+        <h4>执行步骤</h4>
+        <ol>
+          <li>检查 <code>docs/项目需求分析.md</code> 是否存在，如有则找出未完成或含 TODO 的章节</li>
+          <li>判断是新项目还是现有项目增强，决定是否需要先读 5 份根文档</li>
+          <li>分章节引导用户填写：想法概述 → 背景动机 → 用户场景 → 功能优先级 P0/P1/P2 → 非功能需求 → 边界排除 → 成功标准 → 开放问题</li>
+          <li>P0 功能定义具体验收条件</li>
+          <li>完成后交叉检查 <code>项目完整链路说明.md</code> 和 <code>项目文件结构说明.md</code>，冲突记录在第 8 节</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- Architecture -->
+<section class="section" id="arch">
+  <div class="container">
+    <div class="section-label">Architecture</div>
+    <h2 class="section-title">项目架构</h2>
+    <p class="section-desc">文档驱动、阶段门禁、提案追踪 — 三位一体的治理结构。</p>
+
+    <div class="arch-diagram">
+      <h3>三层架构</h3>
+      <div class="arch-layers">
+        <div class="arch-layer">
+          <div class="arch-label">应用层</div>
+          <div class="arch-items">
+            <div class="arch-item">7 个 Action</div>
+            <div class="arch-item">Slash Commands</div>
+            <div class="arch-item">Milestone Tracker</div>
+          </div>
+        </div>
+        <div class="arch-layer">
+          <div class="arch-label">文档层</div>
+          <div class="arch-items">
+            <div class="arch-item">CLAUDE.md</div>
+            <div class="arch-item">AI开发与PR流程.md</div>
+            <div class="arch-item">项目开发规范.md</div>
+            <div class="arch-item">项目完整链路说明.md</div>
+            <div class="arch-item">项目文件结构说明.md</div>
+            <div class="arch-item">项目需求分析.md</div>
+          </div>
+        </div>
+        <div class="arch-layer">
+          <div class="arch-label">治理层</div>
+          <div class="arch-items">
+            <div class="arch-item">checklists/intake.md</div>
+            <div class="arch-item">checklists/pre-pr.md</div>
+            <div class="arch-item">checklists/merge.md</div>
+            <div class="arch-item">checklists/requirements.md</div>
+            <div class="arch-item">checklists/implementation.md</div>
+            <div class="arch-item">checklists/propose.md</div>
+            <div class="arch-item">checklists/track.md</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card-icon">📄</div>
+        <h3>文档先行</h3>
+        <p>任何涉及代码、流程、UI、配置、测试的任务，开始前必须实际阅读或重新核对 5 份根文档。不能凭历史记忆直接开发。</p>
+        <span class="card-tag tag-core">核心原则</span>
+      </div>
+      <div class="card">
+        <div class="card-icon">🚧</div>
+        <h3>阶段门禁</h3>
+        <p>阶段自检未通过时，不能进入下一阶段。每个阶段完成后必须验证：数据流、状态流、日志流、UI 流是否一致。</p>
+        <span class="card-tag tag-core">核心原则</span>
+      </div>
+      <div class="card">
+        <div class="card-icon">🚫</div>
+        <h3>乱码阻塞</h3>
+        <p>所有中文文档、注释、日志、UI 文案都必须做乱码审查。发现乱码视为开发未完成，不能提交为最终结果。</p>
+        <span class="card-tag tag-core">核心原则</span>
+      </div>
+      <div class="card">
+        <div class="card-icon">🎯</div>
+        <h3>提案工作区</h3>
+        <p>每个变更在 <code>governance/artifacts/&lt;change-name&gt;/</code> 下有独立提案文件夹（proposal / specs / design / tasks），AI 与开发者对齐后再开发。</p>
+        <span class="card-tag tag-slash">新增能力</span>
+      </div>
+      <div class="card">
+        <div class="card-icon">📍</div>
+        <h3>Milestone 追踪</h3>
+        <p>实时扫描进行中的变更，显示当前 Milestone、完成度和下一步建议。已完成任务自动推进状态。</p>
+        <span class="card-tag tag-slash">新增能力</span>
+      </div>
+      <div class="card">
+        <div class="card-icon">🔒</div>
+        <h3>PR 安全门禁</h3>
+        <p>自动检查 PR 目标分支是否为 dev 而非 master；合并前验证 PR 状态、本地同步情况和合并授权。</p>
+        <span class="card-tag tag-skill">内置能力</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- Artifact Structure -->
+<section class="section" id="artifact">
+  <div class="container">
+    <div class="section-label">Artifact</div>
+    <h2 class="section-title">提案文件夹结构</h2>
+    <p class="section-desc">由 <code>/governance-propose</code> 生成，每个变更对应一个独立工作区。</p>
+
+    <div class="artifact-tree">
+      <h3>governance/artifacts/&lt;change-name&gt;/</h3>
+      <div class="tree-line"><span class="folder">📁 governance/artifacts/add-dark-mode/</span> <span class="comment">← 变更提案根目录</span></div>
+      <div class="tree-line"><span class="tree-indent"></span><span class="file">📄 proposal.md</span> <span class="comment">变更意图、背景、目标、范围</span></div>
+      <div class="tree-line"><span class="tree-indent"></span><span class="folder">📁 specs/</span></div>
+      <div class="tree-line"><span class="tree-indent"></span><span class="tree-indent"></span><span class="file">📄 index.md</span> <span class="comment">功能需求，P0/P1/P2 优先级 + 验收条件</span></div>
+      <div class="tree-line"><span class="tree-indent"></span><span class="tree-indent"></span><span class="file">📄 scenarios.md</span> <span class="comment">用户故事（作为...我想要...以便...）+ 场景</span></div>
+      <div class="tree-line"><span class="tree-indent"></span><span class="file">📄 design.md</span> <span class="comment">技术方案、模块边界、数据流、API 契约</span></div>
+      <div class="tree-line"><span class="tree-indent"></span><span class="file">📄 tasks.md</span> <span class="comment">3-5 个 Milestone，每个含检查项，状态 🔄/✅/⬜</span></div>
+    </div>
+
+    <div class="milestone-demo">
+      <h3>tasks.md Milestone 示例</h3>
+      <div class="milestone">
+        <div class="milestone-header">
+          <span class="emoji">✅</span>
+          <span>Milestone 1: 需求确认</span>
+          <span class="done-count">[2/2 完成]</span>
+        </div>
+        <div class="milestone-tasks">
+          <div class="task-item"><input type="checkbox" checked disabled> Task 1.1: 对齐变更目标</div>
+          <div class="task-item"><input type="checkbox" checked disabled> Task 1.2: 确认范围与边界</div>
+        </div>
+      </div>
+      <div class="milestone">
+        <div class="milestone-header">
+          <span class="emoji">🔄</span>
+          <span>Milestone 2: 核心实现</span>
+          <span class="done-count">[2/4 进行中]</span>
+        </div>
+        <div class="milestone-tasks">
+          <div class="task-item"><input type="checkbox" checked disabled> Task 2.1: 注册 API 端点</div>
+          <div class="task-item"><input type="checkbox" checked disabled> Task 2.2: 编写数据模型</div>
+          <div class="task-item next">Task 2.3: 实现业务逻辑 <span class="next-tag">建议下一步</span></div>
+          <div class="task-item">Task 2.4: 单元测试</div>
+        </div>
+      </div>
+      <div class="milestone">
+        <div class="milestone-header">
+          <span class="emoji">⬜</span>
+          <span>Milestone 3: PR 与合并</span>
+          <span class="done-count">[0/2 未开始]</span>
+        </div>
+        <div class="milestone-tasks">
+          <div class="task-item">Task 3.1: Pre-PR 检查</div>
+          <div class="task-item">Task 3.2: 创建 PR 到 dev</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- Comparison -->
+<section class="section" id="compare">
+  <div class="container">
+    <div class="section-label">Comparison</div>
+    <h2 class="section-title">与其他框架对比</h2>
+    <p class="section-desc">AI Project Governance 的差异化优势。</p>
+
+    <table class="comp-table">
+      <thead>
+        <tr>
+          <th>特性</th>
+          <th>AI Project Governance</th>
+          <th>OpenSpec</th>
+          <th>BMad Method</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>核心定位</td>
+          <td class="highlight">PR 生命周期 + 开发纪律</td>
+          <td>规范驱动开发（SDD）</td>
+          <td>AI 驱动敏捷方法论</td>
+        </tr>
+        <tr>
+          <td>提案生成</td>
+          <td class="highlight">✅ /governance-propose</td>
+          <td class="highlight">✅ /opsx:propose</td>
+          <td>❌ 无对应能力</td>
+        </tr>
+        <tr>
+          <td>实时引导（Next Step）</td>
+          <td class="highlight">✅ /governance-help</td>
+          <td>❌ 无对应能力</td>
+          <td class="highlight">✅ bmad-help</td>
+        </tr>
+        <tr>
+          <td>Milestone 追踪</td>
+          <td class="highlight">✅ 状态实时更新</td>
+          <td>❌ 无对应能力</td>
+          <td class="partial">⚠ 有限</td>
+        </tr>
+        <tr>
+          <td>文档同步约束</td>
+          <td class="highlight">✅ 结构变更必须更新根文档</td>
+          <td>❌ 无强制约束</td>
+          <td>❌ 无强制约束</td>
+        </tr>
+        <tr>
+          <td>乱码门禁</td>
+          <td class="highlight">✅ 乱码 = 开发未完成</td>
+          <td>❌ 无此概念</td>
+          <td>❌ 无此概念</td>
+        </tr>
+        <tr>
+          <td>PR 目标分支强校验</td>
+          <td class="highlight">✅ 自动纠正错误目标分支</td>
+          <td>❌ 无此概念</td>
+          <td>❌ 无此概念</td>
+        </tr>
+        <tr>
+          <td>多 Agent 协作</td>
+          <td>❌ 单 AI 协作者</td>
+          <td>❌ 单 AI 协作者</td>
+          <td class="highlight">✅ Party Mode</td>
+        </tr>
+        <tr>
+          <td>中文友好</td>
+          <td class="highlight">✅ 中文一等公民</td>
+          <td>⚠ 英文为主</td>
+          <td>⚠ 英文为主</td>
+        </tr>
+        <tr>
+          <td>CLI 工具</td>
+          <td class="partial">⚠ Skill 驱动</td>
+          <td class="highlight">✅ 完整 CLI</td>
+          <td class="highlight">✅ npx bmad-method</td>
+        </tr>
+        <tr>
+          <td>Scale-Adaptive</td>
+          <td>⚠ 所有任务同一流程</td>
+          <td>⚠ 可扩展但无自适应</td>
+          <td class="highlight">✅ 根据复杂度调整深度</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- How to Use -->
+<section class="section">
+  <div class="container">
+    <div class="section-label">Usage</div>
+    <h2 class="section-title">如何使用</h2>
+    <p class="section-desc">在 Cursor 或 Claude Code 中，通过自然语言触发对应的 Action。</p>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card-icon">🌱</div>
+        <h3>第一步：初始化项目</h3>
+        <p>对任意新仓库说：<code>init governance</code> 或 <code>set up project rules</code>。AI 会检查 5 份根文档是否齐全，缺失则从模板复制。</p>
+        <span class="card-tag tag-skill">Action: /project-init</span>
+      </div>
+      <div class="card">
+        <div class="card-icon">💡</div>
+        <h3>第二步：想法变提案</h3>
+        <p>有一个新想法？说：<code>propose 新功能：用户头像上传</code>。AI 在 <code>governance/artifacts/</code> 下生成完整提案文件夹，包含需求、场景、技术方案和任务里程碑。</p>
+        <span class="card-tag tag-slash">Action: /governance-propose</span>
+      </div>
+      <div class="card">
+        <div class="card-icon">🎯</div>
+        <h3>第三步：查看当前进度</h3>
+        <p>随时问：<code>下一步是什么？</code> 或 <code>当前进度</code>。AI 扫描所有进行中的变更，告诉你当前 Milestone、完成度和建议的下一步操作。</p>
+        <span class="card-tag tag-slash">Action: /governance-help</span>
+      </div>
+      <div class="card">
+        <div class="card-icon">🛠</div>
+        <h3>第四步：开始开发</h3>
+        <p>说：<code>start new task</code> 或 <code>implement xxx</code>。AI 读取根文档、理解需求、追踪影响，输出分阶段开发清单。每个阶段完成后自检再进入下一阶段。</p>
+        <span class="card-tag tag-skill">Action: /task-intake</span>
+      </div>
+      <div class="card">
+        <div class="card-icon">📝</div>
+        <h3>第五步：需求分析</h3>
+        <p>说：<code>我有一个想法</code> 或 <code>需求分析</code>。AI 分章节引导你完善想法、背景、用户场景、P0 功能优先级、验收条件和开放风险。</p>
+        <span class="card-tag tag-skill">Action: /requirements-analysis</span>
+      </div>
+      <div class="card">
+        <div class="card-icon">🚀</div>
+        <h3>第六步：PR 前检查</h3>
+        <p>说：<code>ready to PR</code> 或 <code>check before PR</code>。AI 验证：工作区干净、无无关改动、文档已同步、diff 只含任务相关变更。</p>
+        <span class="card-tag tag-skill">Action: /pre-pr-check</span>
+      </div>
+      <div class="card">
+        <div class="card-icon">🔒</div>
+        <h3>第七步：合并</h3>
+        <p>说：<code>merge now</code> 或 <code>can I merge</code>。AI 验证：PR 状态、目标分支、本地同步，然后执行合并（需明确授权）。</p>
+        <span class="card-tag tag-skill">Action: /merge-check</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- Core Hard Rules -->
+<section class="section">
+  <div class="container">
+    <div class="section-label">Rules</div>
+    <h2 class="section-title">核心硬性规则</h2>
+    <p class="section-desc">这些规则不可绕过，是 AI 协作的底线。</p>
+
+    <div class="cards">
+      <div class="card">
+        <div class="card-icon">🚫</div>
+        <h3>Never Guess</h3>
+        <p>所有结论必须基于真实命令输出、真实 diff、真实代码上下文。不能凭记忆、不能靠猜测。</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🌿</div>
+        <h3>Dev Only on Dev</h3>
+        <p>开发基线分支只能是 <code>{{DEFAULT_BRANCH}}</code>（如 dev）。不得以 <code>{{PROD_BRANCH}}</code>（如 master）作为日常开发起点，PR 目标分支也绝不能是 master。</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">📖</div>
+        <h3>Docs Before Code</h3>
+        <p>涉及代码、流程、UI、配置的任务，开始前必须实际阅读根文档。禁止凭"看起来知道项目"直接开发。</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🚧</div>
+        <h3>Gate Before Next Stage</h3>
+        <p>阶段自检未通过时，不得进入下一阶段。每个阶段必须完成自检：数据流、状态流、日志流、UI 流是否一致。</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🔄</div>
+        <h3>Docs Must Sync</h3>
+        <p>结构变更、链路变更、规范变更，都必须更新对应根文档。不能只改代码不改文档，不能只改标题不改正文细节。</p>
+      </div>
+      <div class="card">
+        <div class="card-icon">🧹</div>
+        <h3>Garbled Text = Blocked</h3>
+        <p>中文文档、注释、日志、UI 文案出现乱码视为开发未完成。不能提交为最终结果，禁止在未确认编码的情况下批量重写文件。</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- Footer -->
+<footer class="footer">
+  <div class="container">
+    <p>AI Project Governance · 模板仓库 · 适用于 Cursor / Claude Code</p>
+    <p style="margin-top: 8px; color: var(--text-muted);">Built with structure · Designed for AI collaboration</p>
+  </div>
+</footer>
+
+<script>
+  function toggleAction(header) {
+    const detail = header.closest('.action-detail');
+    detail.classList.toggle('open');
+  }
+</script>
+
+</body>
+</html>
