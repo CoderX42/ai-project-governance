@@ -1,5 +1,5 @@
 ---
-name: apg-intake
+name: apg-task-intake
 description: >-
   开始新任务前的分析动作。读取根文档，理解需求，输出影响范围和分阶段开发清单。
   使用场景：用户提到 "start new task"、"analyze this feature"、"what should I do next"、
@@ -8,7 +8,7 @@ description: >-
 disable-model-invocation: false
 ---
 
-# /apg-intake
+# /apg-task-intake
 
 Run before any new development or analysis task.
 

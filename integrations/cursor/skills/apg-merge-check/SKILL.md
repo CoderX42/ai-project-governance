@@ -1,5 +1,5 @@
 ---
-name: apg-merge
+name: apg-merge-check
 description: >-
   授权合并 PR。验证 PR 状态、分支目标、代码审查结果，执行合并后验证结果。
   使用场景：用户提到 "merge now"、"can I merge"、"ready to merge"、
@@ -8,7 +8,7 @@ description: >-
 disable-model-invocation: false
 ---
 
-# /apg-merge
+# /apg-merge-check
 
 Run only when the user explicitly asks to merge their own PR.
 

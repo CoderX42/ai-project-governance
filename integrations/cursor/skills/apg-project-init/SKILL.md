@@ -1,5 +1,5 @@
 ---
-name: apg-init
+name: apg-project-init
 description: >-
   初始化或验证项目治理文档。检查 5 份根文档是否存在，复制缺失的模板文件，
   提示用户替换占位符（{{DEFAULT_BRANCH}}、{{PROD_BRANCH}}、{{TEST_COMMAND}} 等）。
@@ -8,7 +8,7 @@ description: >-
 disable-model-invocation: false
 ---
 
-# /apg-init
+# /apg-project-init
 
 Initialize or verify project governance documents.
 

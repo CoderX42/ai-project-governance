@@ -1,16 +1,16 @@
 ---
 name: apg-main
-description: >-
+description: |-
   AI 开发治理主入口。自动加载并始终生效，提供 7 个动作的快捷引用。
   使用场景：用户提到 initialize governance、set up project rules、create CLAUDE.md。
   7 个可用动作：
-  /apg-init         — 初始化项目治理文档
-  /apg-intake       — 开始新任务，分析影响范围和分阶段开发清单
-  /apg-req          — 从原始想法引导填写结构化需求文档
-  /apg-prepr        — PR 前检查 diff、文档同步、测试
-  /apg-merge        — 授权合并 PR，验证结果
-  /apg-propose      — 创建结构化变更提案
-  /apg-help         — 查看当前进度和下一步建议
+  /apg-project-init         — 初始化项目治理文档
+  /apg-task-intake          — 开始新任务，分析影响范围和分阶段开发清单
+  /apg-requirements-analysis — 从原始想法引导填写结构化需求文档
+  /apg-pre-pr-check         — PR 前检查 diff、文档同步、测试
+  /apg-merge-check          — 授权合并 PR，验证结果
+  /apg-governance-propose   — 创建结构化变更提案
+  /apg-governance-help      — 查看当前进度和下一步建议
 disable-model-invocation: false
 ---
 
@@ -22,13 +22,13 @@ AI 开发治理主入口。始终自动加载，提供全局规则约束。
 
 | Skill | 触发场景 |
 |-------|----------|
-| `/apg-init` | "init governance", "set up project rules" |
-| `/apg-intake` | "start new task", "what should I do next" |
-| `/apg-req` | "new idea", "需求分析", "我有一个想法" |
-| `/apg-prepr` | "ready to PR", "check before PR" |
-| `/apg-merge` | "merge now", "can I merge" |
-| `/apg-propose` | "propose 新功能", "创建提案" |
-| `/apg-help` | "下一步是什么", "当前进度" |
+| `/apg-project-init` | "init governance", "set up project rules" |
+| `/apg-task-intake` | "start new task", "what should I do next" |
+| `/apg-requirements-analysis` | "new idea", "需求分析", "我有一个想法" |
+| `/apg-pre-pr-check` | "ready to PR", "check before PR" |
+| `/apg-merge-check` | "merge now", "can I merge" |
+| `/apg-governance-propose` | "propose 新功能", "创建提案" |
+| `/apg-governance-help` | "下一步是什么", "当前进度" |
 
 ## 核心规则
 

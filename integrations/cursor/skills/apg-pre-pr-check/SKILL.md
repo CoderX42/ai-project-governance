@@ -1,5 +1,5 @@
 ---
-name: apg-prepr
+name: apg-pre-pr-check
 description: >-
   PR 前全面检查。验证 git 卫生、文档同步、diff 质量、测试结果，
   并生成 PR 标题和正文草稿。
@@ -8,7 +8,7 @@ description: >-
 disable-model-invocation: false
 ---
 
-# /apg-prepr
+# /apg-pre-pr-check
 
 Run before the user says "create PR" or "push and open PR".
 

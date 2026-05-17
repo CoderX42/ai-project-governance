@@ -1,5 +1,5 @@
 ---
-name: apg-req
+name: apg-requirements-analysis
 description: >-
   从原始想法引导填写结构化需求文档。覆盖想法概述、背景动机、用户场景、
   P0/P1/P2 功能优先级、非功能性需求、边界排除、成功标准、开放风险。
@@ -8,7 +8,7 @@ description: >-
 disable-model-invocation: false
 ---
 
-# /apg-req
+# /apg-requirements-analysis
 
 Run when the user has a new idea, wants to clarify a new feature, or says "我有一个想法".
 
