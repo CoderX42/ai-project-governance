@@ -165,20 +165,27 @@ main() {
 
   # ------------------------------------------------------------
   # 核心：解析 SOURCE_DIR
-  # 从 curl|bash 管道执行时 $0=-bash, PWD 为任意目录。
-  # 策略：检查本地脚本是否存在 → PWD 回溯搜索 → /proc fd
+  #
+  # 远程 curl|bash 执行时：PWD=/Users/karl/code/DesignExtractAnyWeb
+  # （目标目录），不是 governance 仓库所在目录。
+  # 此时 BASH_SOURCE[0] 为空，向上回溯找不到仓库。
+  #
+  # 解决策略：
+  #   1. 直接检查本地 governance 仓库是否存在（本地执行场景）
+  #   2. 远程执行场景：从 --source 参数或环境变量 GOV_REPO 获取仓库 URL
+  #   3. 兜底：克隆 governance 仓库到临时目录，用完删除
   # ------------------------------------------------------------
   _resolve_source_dir() {
     local try="${BASH_SOURCE[0]:-$0}"
-    # 1. BASH_SOURCE[0] 指向真实文件
+    # 1. BASH_SOURCE[0] 指向真实文件（直接执行脚本时）
     if [[ -f "$try" && "$try" != "/dev/stdin" && "$try" != "/dev/fd/0" && "$try" != "-bash" ]]; then
       echo "$(cd "$(dirname "$try")/.." && pwd)"; return
     fi
-    # 2. 本地执行时 PWD 下脚本存在
+    # 2. 本地执行时 PWD 下脚本存在（直接 bash 执行本地脚本）
     if [[ -f "${PWD}/scripts/init-governance.sh" ]]; then
       echo "$(cd "$PWD" && pwd)"; return
     fi
-    # 3. 从 PWD 向上回溯（只搜到 $HOME 或 /）
+    # 3. 从 PWD 向上回溯（只在 governance repo 是目标目录祖先时有效）
     local dir="$(pwd)"
     while [[ "$dir" != "/" && "$dir" != "$HOME" ]]; do
       if [[ -f "$dir/integrations/cursor/skills/ai-project-governance/SKILL.md" ]]; then
@@ -195,6 +202,25 @@ main() {
         fi
       fi
     done
+    # ------------------------------------------------------------
+    # 5. 兜底：远程 curl|bash 执行时，所有本地策略都失败了，
+    #    说明 PWD 下没有 governance 仓库。此时从 GitHub 克隆到临时目录。
+    #    GOV_REPO 环境变量可以覆盖默认仓库（支持 fork 或镜像）。
+    # ------------------------------------------------------------
+    local repo_url="${GOV_REPO:-https://github.com/CoderX42/ai-project-governance.git}"
+    local branch_name="${GOV_BRANCH:-main}"
+    local tmp_clone="$(mktemp -d)"
+    echo "  🔃 首次远程执行，正在克隆 governance 仓库到临时目录..." >&2
+    if git clone --depth=1 -b "$branch_name" "$repo_url" "$tmp_clone" >/dev/null 2>&1; then
+      echo "$(cd "$tmp_clone" && pwd)"
+      return
+    fi
+    # depth=1 失败时尝试完整克隆
+    if git clone -b "$branch_name" "$repo_url" "$tmp_clone" >/dev/null 2>&1; then
+      echo "$(cd "$tmp_clone" && pwd)"
+      return
+    fi
+    rm -rf "$tmp_clone"
     echo ""
   }
 
